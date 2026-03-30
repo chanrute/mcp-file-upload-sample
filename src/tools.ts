@@ -5,7 +5,7 @@ import type { ObjectStorage } from "./storage.js";
 
 type UploadFileArgs = {
   fileBase64: string;
-  fileName?: string | undefined;
+  fileName: string;
 };
 
 type UploadViaCurlArgs = {
@@ -27,8 +27,8 @@ export function registerUploadFile(
         fileBase64: z.string().describe("ファイルの Base64 エンコード文字列。"),
         fileName: z
           .string()
-          .optional()
-          .describe('元のファイル名。未指定時は "upload.bin"。'),
+          .default("upload.bin")
+          .describe("元のファイル名。"),
       },
     },
     // @ts-expect-error TS2589: MCP SDK + Zod の型推論が深すぎるため抑制
@@ -36,7 +36,7 @@ export function registerUploadFile(
       const { fileBase64, fileName } = args;
       const normalized = fileBase64.replace(/\s+/g, "");
       const buffer = Buffer.from(normalized, "base64");
-      const resolvedName = fileName ?? "upload.bin";
+      const resolvedName = fileName;
 
       const { key, url } = await storage.putObject(resolvedName, buffer);
       return {
